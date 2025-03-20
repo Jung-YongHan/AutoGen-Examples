@@ -1,2 +1,2 @@
-# LLM-MAS
-Buliding Multi-Agent System with LLMs
+# Cryptrading-MAS
+Buliding LLM-Powered Multi-Agent System for Cryptocurrency Trading
