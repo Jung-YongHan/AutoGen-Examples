@@ -46,9 +46,9 @@ async def main(selector_model_client: model_type, model_client: model_type, keyw
         system_message=(
             """
             You are a strict professor evaluating the report written by 'StudentAgent'.
-            Read the report critically and provide constructive feedback.
+            Read the report critically and provide constructive feedback, grade.
             Point out any weaknesses or areas for improvement clearly.
-            And Everything is perfect, say 'Excellent!'.
+            If Grade is A+, then say 'Excellent!'.
             """
         ),
     )
@@ -74,6 +74,7 @@ async def main(selector_model_client: model_type, model_client: model_type, keyw
         model_client=selector_model_client,
         termination_condition=text_mention_termination,
         selector_prompt=selector_prompt,
+        max_turns=10,
         allow_repeated_speaker=False,
     )
 
@@ -91,6 +92,6 @@ if __name__ == "__main__":
 
     # model_client = OllamaChatCompletionClient(model="llama3.2")
     model_client = OpenAIChatCompletionClient(model="gpt-4o", api_key=api_key)
-    selector_model_client = OpenAIChatCompletionClient(model="gpt-4o", api_key=api_key)
+    selector_model_client = OpenAIChatCompletionClient(model="gpt-4o-mini", api_key=api_key)
 
     asyncio.run(main(selector_model_client=selector_model_client, model_client=model_client, keyword=keyword))
