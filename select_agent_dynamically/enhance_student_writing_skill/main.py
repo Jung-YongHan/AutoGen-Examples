@@ -7,7 +7,7 @@ from autogen_ext.models.ollama import OllamaChatCompletionClient
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 from dotenv import load_dotenv
 
-from src.enhance_student_writing_skill.models import TeamAgent, CreatorAgent, StudentAgent, ProfessorAgent
+from select_agent_dynamically.enhance_student_writing_skill.models import TeamAgent, CreatorAgent, StudentAgent, ProfessorAgent
 
 
 async def main():
