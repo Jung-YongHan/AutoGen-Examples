@@ -8,9 +8,8 @@ This repository contains a collection of examples demonstrating the use of the A
 
 ## Technology Stack
 
-- Python
-- Autogen Framework
-- Large Language Models (LLMs)
+- Python : 3.12
+- Autogen : 0.4.9
 
 ## Installation and Setup
 
@@ -25,27 +24,8 @@ To get started with any of the examples, follow these steps:
       pip install -r requirements.txt
    ```
 
-
-3. Follow specific instructions in each example directory to set up and run the examples.
-
-## Examples
-
-Each example directory contains a README with detailed instructions on its purpose, setup, and execution:
-
-- **Example 1:** Simple dialogue generation between LLM-based agents.
-- **Example 2:** Collaborative storytelling using multiple LLMs.
-- **Example 3:** Decision-making simulation in a virtual environment.
-
 Explore each example to understand how LLMs can be leveraged for different types of multi-agent interactions.
 
 ## Contributing
 
 Contributions are welcome! If you have ideas for new examples or improvements, please submit a pull request. For major changes, please open an issue first to discuss potential updates.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-For questions or feedback, you can reach out to the project maintainer at [your-email@example.com](mailto:your-email@example.com).
