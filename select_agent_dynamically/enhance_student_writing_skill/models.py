@@ -17,12 +17,11 @@ from dotenv import load_dotenv
 class CreatorAgent(AssistantAgent):
     def __init__(
         self,
-        model_client: Union[OpenAIChatCompletionClient, OllamaChatCompletionClient],
     ):
         super().__init__(
             name="CreatorAgent",
             description="An agent that generates content based on a given topic.",
-            model_client=model_client,
+            model_client=OllamaChatCompletionClient(model=os.getenv("CREATOR_MODEL")),
             system_message=(
                 """
                 You are an agent that generates content based on a given <keyword>.
@@ -35,12 +34,14 @@ class CreatorAgent(AssistantAgent):
 class StudentAgent(AssistantAgent):
     def __init__(
         self,
-        model_client: Union[OpenAIChatCompletionClient, OllamaChatCompletionClient],
     ):
         super().__init__(
             name="StudentAgent",
             description="A student with poor report writing skills. Revises based on feedback to improve.",
-            model_client=model_client,
+            model_client=OpenAIChatCompletionClient(
+                model=os.getenv("STUDENT_MODEL"),
+                api_key=os.getenv("OPENAI_API_KEY"),
+            ),
             system_message=(
                 """
                 You are a student with poor report writing skills.
@@ -54,12 +55,14 @@ class StudentAgent(AssistantAgent):
 class ProfessorAgent(AssistantAgent):
     def __init__(
         self,
-        model_client: Union[OpenAIChatCompletionClient, OllamaChatCompletionClient],
     ):
         super().__init__(
             name="ProfessorAgent",
             description="A strict professor who evaluates reports critically and provides constructive feedback.",
-            model_client=model_client,
+            model_client=OpenAIChatCompletionClient(
+                model=os.getenv("PROFESSOR_MODEL"),
+                api_key=os.getenv("OPENAI_API_KEY"),
+            ),
             system_message=(
                 """
                 You are a strict professor evaluating the report written by 'StudentAgent'.
@@ -89,9 +92,7 @@ class TeamAgent:
         self.keyword = keyword
 
     async def get_content(self):
-        creator = CreatorAgent(
-            model_client=OllamaChatCompletionClient(model="llama3.2")
-        )
+        creator = CreatorAgent()
         result: Response = await creator.on_messages(
             [
                 TextMessage(
@@ -107,18 +108,8 @@ class TeamAgent:
 
         tutor_team = TutorTeam(
             participants=[
-                StudentAgent(
-                    model_client=OpenAIChatCompletionClient(
-                        model=os.getenv("STUDENT_MODEL"),
-                        api_key=os.getenv("OPENAI_API_KEY"),
-                    )
-                ),
-                ProfessorAgent(
-                    model_client=OpenAIChatCompletionClient(
-                        model=os.getenv("PROFESSOR_MODEL"),
-                        api_key=os.getenv("OPENAI_API_KEY"),
-                    )
-                ),
+                StudentAgent(),
+                ProfessorAgent(),
             ],
             termination_condition=TextMentionTermination("Excellent!"),
         )
