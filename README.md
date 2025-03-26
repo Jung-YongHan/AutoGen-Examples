@@ -17,7 +17,7 @@ To get started with any of the examples, follow these steps:
 
 1. Clone the repository:
    ```bash
-      git clone https://github.com/your-username/autogen-llm-multi-agent-examples.git cd autogen-llm-multi-agent-examples
+      git clone https://github.com/Jung-YongHan/AutoGen-Examples
    ```
 2. Install dependencies:
    ```bash
