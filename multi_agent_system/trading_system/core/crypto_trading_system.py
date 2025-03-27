@@ -53,6 +53,12 @@ class CryptoTradingSystem:
         4. 매매 실행 후 성찰 보고서를 갱신
         5. 반복 수행
         """
+        print("-------------- 투자 시스템 시작 --------------")
+        print("투자 시작일:", self.start_date)
+        print("투자 종료일:", self.end_date)
+        print("투자 대상 코인:", self.coin)
+        print("캔들 단위:", self.candle_unit)
+        print("초기 현금:", self.portfolio_manager.current_cash)
 
         # 1) 첫 수행 시, 지정된 기간의 일부(예: 5%)만 우선 수집
         self.tmp_end_date = await self._calculate_partial_end_date(
@@ -177,14 +183,39 @@ class CryptoTradingSystem:
         return start_dt.strftime(fmt), new_end_dt.strftime(fmt)
 
 
-if __name__ == "__main__":
+class AsyncCryptoTradingSystem(CryptoTradingSystem):
+    def __init__(
+        self,
+        initial_cash: int,
+        fee_rate: float,
+        coin: str,
+        start_date: str,
+        end_date: str,
+        candle_unit: str,
+    ):
+        super().__init__(
+            initial_cash, fee_rate, coin, start_date, end_date, candle_unit
+        )
+
+    def run(self):
+        asyncio.run(super().run())
+
+
+def create_system(
+    initial_cash: int,
+    fee_rate: float,
+    coin: str,
+    start_date: str,
+    end_date: str,
+    candle_unit: str,
+):
     load_dotenv()
-    system = CryptoTradingSystem(
-        initial_cash=10_000_000,
-        fee_rate=0.08,
-        coin="KRW-BTC",
-        start_date="2024-09-01 09:00:00",
-        end_date="2024-09-10 09:00:00",
-        candle_unit="1d",
+
+    return AsyncCryptoTradingSystem(
+        initial_cash=initial_cash,
+        fee_rate=fee_rate,
+        coin=coin,
+        start_date=start_date,
+        end_date=end_date,
+        candle_unit=candle_unit,
     )
-    asyncio.run(system.run())
