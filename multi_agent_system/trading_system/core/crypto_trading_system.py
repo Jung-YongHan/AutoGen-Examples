@@ -1,4 +1,5 @@
 import asyncio
+import time
 from datetime import datetime, timedelta
 from typing import Tuple
 
@@ -61,6 +62,8 @@ class CryptoTradingSystem:
         print("투자 대상 코인:", self.coin)
         print("캔들 단위:", self.candle_unit)
         print("초기 현금:", self.portfolio_manager.current_cash)
+
+        start_time = time.time()
 
         # 1) 첫 수행 시, 지정된 기간의 일부(예: 5%)만 우선 수집
         self.tmp_end_date = await self._calculate_partial_end_date(
@@ -140,6 +143,14 @@ class CryptoTradingSystem:
         )
         print(f"멀티 에이전트 시스템 전략 수익률: {total_profit:.2f}")
         await self.backtest_buy_and_hold()
+
+        end_time = time.time()
+        # 총 소요 시간 계산. 이때, 시간, 분, 초 단위로 출력
+        elapsed_time = end_time - start_time
+        elapsed_hour = int(elapsed_time // 3600)
+        elapsed_minute = int((elapsed_time % 3600) // 60)
+        elapsed_second = int((elapsed_time % 3600) % 60)
+        print(f"총 소요 시간: {elapsed_hour}시간 {elapsed_minute}분 {elapsed_second}초")
 
     async def _calculate_partial_end_date(
         self,
