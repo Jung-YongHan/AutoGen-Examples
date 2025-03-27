@@ -34,6 +34,8 @@ class CryptoTradingSystem:
         self.portfolio_manager = PortfolioManager(
             initial_cash=initial_cash, fee_rate=fee_rate
         )
+        self.initial_cash = initial_cash
+        self.fee_rate = fee_rate
         self.coin = coin
         self.start_date = start_date
         self.end_date = end_date
@@ -54,8 +56,8 @@ class CryptoTradingSystem:
         5. 반복 수행
         """
         print("-------------- 투자 시스템 시작 --------------")
-        print("투자 시작일:", self.start_date)
-        print("투자 종료일:", self.end_date)
+        print("투자 시작 캔들:", self.start_date)
+        print("투자 종료 캔들:", self.end_date)
         print("투자 대상 코인:", self.coin)
         print("캔들 단위:", self.candle_unit)
         print("초기 현금:", self.portfolio_manager.current_cash)
@@ -69,7 +71,7 @@ class CryptoTradingSystem:
         )
 
         while True:
-            if self.tmp_end_date > self.end_date:
+            if self.tmp_end_date >= self.end_date:
                 break
 
             data = await self.data_collector.collect_price_data(
@@ -118,6 +120,26 @@ class CryptoTradingSystem:
             print(
                 f"\n현금: {self.portfolio_manager.current_cash}, 코인 수량: {self.portfolio_manager.current_position}"
             )
+            print("-------------------------------------------------------------------")
+
+        if self.portfolio_manager.current_position > 0:
+            # 전체 코인을 팔아서 현금화
+            print(self.tmp_end_date)
+            print(price_data[-1]["close"])
+            self.portfolio_manager.record_trade(
+                date=self.tmp_end_date,
+                action=-1,
+                open_price=price_data[-1]["close"],
+            )
+
+        # 수익률 계산
+        total_profit = (
+            (self.portfolio_manager.current_cash - self.initial_cash)
+            / self.initial_cash
+            * 100
+        )
+        print(f"멀티 에이전트 시스템 전략 수익률: {total_profit:.2f}")
+        await self.backtest_buy_and_hold()
 
     async def _calculate_partial_end_date(
         self,
@@ -181,6 +203,20 @@ class CryptoTradingSystem:
         delta_args = TIME_DELTA_MAP.get(candle_unit, TIME_DELTA_MAP[DEFAULT_UNIT])
         new_end_dt = end_dt + timedelta(**delta_args)
         return start_dt.strftime(fmt), new_end_dt.strftime(fmt)
+
+    async def backtest_buy_and_hold(self):
+        all_data = await self.data_collector.collect_price_data(
+            coin=self.coin,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            candle_unit=self.candle_unit,
+        )
+
+        buy_amount = all_data[0]["open"]
+        sell_amount = all_data[-1]["close"]
+        # 수익률 계산
+        profit = (sell_amount - buy_amount) / buy_amount * 100
+        print(f"Buy and Hold 전략 수익률: {profit:.2f}%")
 
 
 class AsyncCryptoTradingSystem(CryptoTradingSystem):

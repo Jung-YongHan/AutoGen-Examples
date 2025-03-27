@@ -53,19 +53,15 @@ class PortfolioManager:
         if action == 1:  # BUY
             if self.current_cash > 0:
                 # (1) 총 투자 금액에서 수수료를 고려해, 실제 코인 매수에 쓸 수 있는 금액을 계산
-                cost_of_coins = self.current_cash / (1 + self.fee_rate)
+                total_spent = self.current_cash * (1 - self.fee_rate)
                 # (2) 매수 가능한 코인 수량 (소수점까지)
-                coins_bought = cost_of_coins / open_price
-                # (3) 수수료 = cost_of_coins * fee_rate
-                fee_amount = cost_of_coins * self.fee_rate
-                # (4) 총 지불 금액
-                total_spent = cost_of_coins + fee_amount  # == self.current_cash
+                coins_bought = total_spent / open_price
 
-                # (5) 포트폴리오 업데이트
+                # (3) 포트폴리오 업데이트
                 self.current_position += coins_bought
-                self.current_cash -= total_spent  # 여기서는 전액 소진(0이 됨)
+                self.current_cash -= self.current_cash  # 여기서는 전액 소진(0이 됨)
 
-                # (6) 거래 기록
+                # (4) 거래 기록
                 self.trade_history.append(
                     {
                         "date": date,
@@ -73,8 +69,7 @@ class PortfolioManager:
                         "trade_price": open_price,
                         "coins_traded": coins_bought,
                         "fee_rate": self.fee_rate,
-                        "fee_amount": fee_amount,
-                        "spent_amount": total_spent,
+                        "total_spent": total_spent,
                         "current_position": self.current_position,
                         "current_cash": self.current_cash,
                     }
@@ -84,8 +79,7 @@ class PortfolioManager:
             if self.current_position > 0:
                 # (1) 전량 매도한다고 가정
                 proceeds = self.current_position * open_price
-                fee_amount = proceeds * self.fee_rate
-                net_after_fee = proceeds - fee_amount
+                net_after_fee = proceeds * (1 - self.fee_rate)
 
                 # (2) 포트폴리오 업데이트
                 coins_sold = self.current_position
@@ -100,7 +94,6 @@ class PortfolioManager:
                         "trade_price": open_price,
                         "coins_traded": coins_sold,
                         "fee_rate": self.fee_rate,
-                        "fee_amount": fee_amount,
                         "gross_received": proceeds,
                         "net_after_fee": net_after_fee,
                         "current_position": self.current_position,
