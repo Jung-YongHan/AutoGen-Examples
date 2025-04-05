@@ -1,12 +1,15 @@
 import asyncio
-import os
+import time
 from typing import List, Dict
 
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.messages import TextMessage
 from autogen_core import CancellationToken
 from autogen_ext.models.openai import OpenAIChatCompletionClient
+from autogen_ext.models.ollama import OllamaChatCompletionClient
 from dotenv import load_dotenv
+
+from multi_agent_system.trading_system.utils.time_utils import calculate_elapsed_time
 
 
 class PriceAnalysisExpert(AssistantAgent):
@@ -14,11 +17,13 @@ class PriceAnalysisExpert(AssistantAgent):
         super().__init__(
             name="PriceAnalysisExpert",
             description="암호화폐 가격 데이터 분석 전문가",
-            model_client=OpenAIChatCompletionClient(
-                model=os.getenv("PRICE_ANALYSIS_EXPERT_MODEL"),
-                api_key=os.getenv("OPENAI_API_KEY"),
-            ),
+            # model_client=OpenAIChatCompletionClient(
+            #     model=os.getenv("PRICE_ANALYSIS_EXPERT_MODEL"),
+            #     api_key=os.getenv("OPENAI_API_KEY"),
+            # ),
+            model_client=OllamaChatCompletionClient(model="deepseek-r1:32b"),
             system_message="""
+                'Say Korean for all responses'
                 당신은 암호화폐 가격 데이터 분석 전문가이다.
                 단기적인 측면에서 가격 동향이 어떻게 흘러갈 것인지 주어진 암호화폐 가격 데이터를 기반으로 분석해야 한다.
                 설명은 투자 전문가가 쉽게 파악할 수 있도록, 간결하고 명확하게 근거를 토대로 작성해야 한다. 
@@ -39,6 +44,8 @@ class PriceAnalysisExpert(AssistantAgent):
         Returns:
             str: 가격 추세에 대한 요약 리포트 (예: "단기적으로 상승 추세가 예상됩니다.")
         """
+        start_time = time.time()
+
         content = f"""
         {price_data}
         """
@@ -49,10 +56,17 @@ class PriceAnalysisExpert(AssistantAgent):
         )
 
         analysis_report = response.chat_message.content
-        print("-------------- 가격 분석 전문가 (PriceAnalysisExpert) ---------------")
-        print(f"\n{analysis_report}\n")
-        print("-------------------------------------------------------------------")
 
+        end_time = time.time()
+        elapsed_day, elapsed_hour, elapsed_minute, elapsed_second = (
+            calculate_elapsed_time(start_time, end_time)
+        )
+        print("-------------- 가격 분석 전문가 (PriceAnalysisExpert) ---------------")
+        print(f"\n{analysis_report}\n\n")
+        print(
+            f"응답 소요 시간: {elapsed_day}일 {elapsed_hour}시간 {elapsed_minute}분 {elapsed_second}초"
+        )
+        print("-------------------------------------------------------------------")
         return analysis_report
 
 

@@ -24,9 +24,9 @@ class DataCollector:
 
         Args:
             coin (str): 예) "KRW-BTC"
-            start_date (str): 시작 날짜 (예: "2020-10-10")
-            end_date (str): 종료 날짜 (예: "2024-10-09")
-            candle_unit (str): 캔들 단위 (예: "1d", "1h" 등)
+            start_date (str): 시작 날짜 (예: "2020-10-10 09:00:00")
+            end_date (str): 종료 날짜 (예: "2024-10-09 09:00:00")
+            candle_unit (str): 캔들 단위 (예: "1d", "1h", "1m" 등)
 
         Returns:
             List[Dict]: 수집된 가격 데이터가 담긴 리스트
@@ -54,26 +54,36 @@ class DataCollector:
 
         current_dt = end_dt
         while True:
-            # 루프 탈출 조건
             if current_dt < start_dt:
                 break
 
             to_param = current_dt.strftime("%Y-%m-%d %H:%M:%S")
 
-            # 남은 일수(또는 시간, 분)를 구해서 count 결정
-            # (예: 1일봉일 때 남은 일이 5일 뿐이면, count=5로 요청)
             days_diff = (current_dt.date() - start_dt.date()).days + 1
-            # 200보다 작으면 그대로, 크면 200
             n_candles_to_fetch = min(days_diff, 200)
 
-            # 최대 200개씩 받을 수 있으므로 count=200
             url = (
                 f"{base_url}/{candle_type}"
                 f"?market={coin}"
                 f"&to={to_param}"
                 f"&count={n_candles_to_fetch}"
             )
-            response = requests.get(url)
+
+            # 429 에러에 대한 리트라이 메커니즘 추가
+            max_retries = 5
+            retries = 0
+            while retries < max_retries:
+                response = requests.get(url)
+                if response.status_code == 429:
+                    wait_time = int(response.headers.get("Retry-After", "1"))
+                    print(
+                        f"[Rate Limit] 429 에러 발생. {wait_time}초 후 재시도합니다..."
+                    )
+                    await asyncio.sleep(wait_time)
+                    retries += 1
+                else:
+                    break
+
             if response.status_code != 200:
                 print(f"[Error] {response.status_code} / {response.text}")
                 break
@@ -84,7 +94,7 @@ class DataCollector:
             candles.reverse()
 
             for c in candles:
-                kst_time = c["candle_date_time_kst"]  # 예) "2024-10-09T09:00:00"
+                kst_time = c["candle_date_time_kst"]  # 예: "2024-10-09T09:00:00"
                 if kst_time not in existing_dates:
                     self.collected_data.append(
                         {
@@ -112,7 +122,7 @@ if __name__ == "__main__":
     collector = DataCollector()
     data = asyncio.run(
         collector.collect_price_data(
-            "KRW-BTC", "2024-10-01 09:00:00", "2024-10-09 09:00:00", "1d"
+            "KRW-BTC", "2025-03-01 09:00:00", "2025-03-04 09:00:00", "1m"
         )
     )
     print(data)

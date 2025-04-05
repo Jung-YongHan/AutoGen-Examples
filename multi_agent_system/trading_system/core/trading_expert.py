@@ -1,12 +1,15 @@
 import asyncio
-import os
 import re
+import time
 
 from autogen_agentchat.messages import TextMessage
 from autogen_agentchat.agents import AssistantAgent
 from autogen_core import CancellationToken
+from autogen_ext.models.ollama import OllamaChatCompletionClient
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 from dotenv import load_dotenv
+
+from multi_agent_system.trading_system.utils.time_utils import calculate_elapsed_time
 
 
 class TradingExpert(AssistantAgent):
@@ -14,11 +17,13 @@ class TradingExpert(AssistantAgent):
         super().__init__(
             name="TradingExpert",
             description="투자 전문가",
-            model_client=OpenAIChatCompletionClient(
-                model=os.getenv("TRADING_EXPERT_MODEL"),
-                api_key=os.getenv("OPENAI_API_KEY"),
-            ),
+            # model_client=OpenAIChatCompletionClient(
+            #     model=os.getenv("TRADING_EXPERT_MODEL"),
+            #     api_key=os.getenv("OPENAI_API_KEY"),
+            # ),
+            model_client=OllamaChatCompletionClient(model="deepseek-r1:32b"),
             system_message="""
+                'Say Korean for all responses'
                 당신은 투자 매매 신호 생성 전문가이다.
                 당신은 PriceAnalysisExpert가 암호화페 가격 데이터를 분석한 요약 지문을 기반으로 다음 틱(캔들)의 매매 신호를 생성하는 역할을 수행한다.
                 매매 신호 생성에 대한 근거를 작성해야 한다.
@@ -45,6 +50,8 @@ class TradingExpert(AssistantAgent):
             int: 매매신호
             매매 신호는 1(매수), 0(보유), -1(매도)
         """
+        start_time = time.time()
+
         reason = f"""
         가격 추세 분석 리포트: 
             {analysis_report}
@@ -82,8 +89,16 @@ class TradingExpert(AssistantAgent):
 # Reason: 
     {reasons}
 """
+
+        end_time = time.time()
+        elapsed_day, elapsed_hour, elapsed_minute, elapsed_second = (
+            calculate_elapsed_time(start_time, end_time)
+        )
         print("-------------------- 투자 전문가 (TradingExpert) --------------------")
-        print(reason)
+        print(f"\n{reason}\n\n")
+        print(
+            f"응답 소요 시간: {elapsed_day}일 {elapsed_hour}시간 {elapsed_minute}분 {elapsed_second}초"
+        )
         print("-------------------------------------------------------------------")
         return signal
 

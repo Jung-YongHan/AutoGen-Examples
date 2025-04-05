@@ -17,6 +17,7 @@ from multi_agent_system.trading_system.core.price_analysis_expert import (
     PriceAnalysisExpert,
 )
 from multi_agent_system.trading_system.core.trading_expert import TradingExpert
+from multi_agent_system.trading_system.utils.time_utils import calculate_elapsed_time
 
 
 class CryptoTradingSystem:
@@ -145,12 +146,12 @@ class CryptoTradingSystem:
         await self.backtest_buy_and_hold()
 
         end_time = time.time()
-        # 총 소요 시간 계산. 이때, 시간, 분, 초 단위로 출력
-        elapsed_time = end_time - start_time
-        elapsed_hour = int(elapsed_time // 3600)
-        elapsed_minute = int((elapsed_time % 3600) // 60)
-        elapsed_second = int((elapsed_time % 3600) % 60)
-        print(f"총 소요 시간: {elapsed_hour}시간 {elapsed_minute}분 {elapsed_second}초")
+        elapsed_day, elapsed_hour, elapsed_minute, elapsed_second = (
+            calculate_elapsed_time(start_time, end_time)
+        )
+        print(
+            f"총 소요 시간: {elapsed_day}일 {elapsed_hour}시간 {elapsed_minute}분 {elapsed_second}초"
+        )
 
     async def _calculate_partial_end_date(
         self,
