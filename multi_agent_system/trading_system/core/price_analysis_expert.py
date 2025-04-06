@@ -1,13 +1,11 @@
-import asyncio
+import os
 import time
-from typing import List, Dict, Union
+from typing import List, Dict
 
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.messages import TextMessage
 from autogen_core import CancellationToken
 from autogen_ext.models.openai import OpenAIChatCompletionClient
-from autogen_ext.models.ollama import OllamaChatCompletionClient
-from dotenv import load_dotenv
 
 from multi_agent_system.trading_system.utils.time_utils import calculate_elapsed_time
 
@@ -15,12 +13,14 @@ from multi_agent_system.trading_system.utils.time_utils import calculate_elapsed
 class PriceAnalysisExpert(AssistantAgent):
     def __init__(
         self,
-        model_client: Union[OpenAIChatCompletionClient, OllamaChatCompletionClient],
     ) -> None:
         super().__init__(
             name="PriceAnalysisExpert",
             description="암호화폐 가격 데이터 분석 전문가",
-            model_client=model_client,
+            model_client=OpenAIChatCompletionClient(
+                model=os.getenv("PRICE_ANALYSIS_EXPERT_MODEL"),
+                api_key=os.getenv("OPENAI_API_KEY"),
+            ),
             system_message="""
                 You are an expert in cryptocurrency price data analysis. 
                 You need to analyze the given cryptocurrency price data to determine the short-term price trend. 
@@ -30,7 +30,7 @@ class PriceAnalysisExpert(AssistantAgent):
                 Additionally, do not summarize data by candle (tick, e.g., date), volatility summary, or trend summary, as the data can become lengthy. 
                 Only summarize the key points that can be used as evidence.
                 
-                Then, say 'Korean' for all responses
+                Please respond to all prompts in Korean.          
             """,
         )
 

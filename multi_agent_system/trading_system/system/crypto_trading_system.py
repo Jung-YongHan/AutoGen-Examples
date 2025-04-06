@@ -1,10 +1,8 @@
 import asyncio
 import time
 from datetime import datetime, timedelta
-from typing import Tuple, Union
+from typing import Tuple
 
-from autogen_ext.models.ollama import OllamaChatCompletionClient
-from autogen_ext.models.openai import OpenAIChatCompletionClient
 from dotenv import load_dotenv
 
 from multi_agent_system.trading_system.core.constants import (
@@ -32,12 +30,6 @@ class CryptoTradingSystem:
         start_date: str,
         end_date: str,
         candle_unit: str,
-        price_analysis_expert_model: Union[
-            OpenAIChatCompletionClient, OllamaChatCompletionClient
-        ],
-        trading_expert_model: Union[
-            OpenAIChatCompletionClient, OllamaChatCompletionClient
-        ],
     ):
         self.system_name = system_name
         self.initial_cash = initial_cash
@@ -48,10 +40,8 @@ class CryptoTradingSystem:
         self.candle_unit = candle_unit
 
         self.data_collector = DataCollector()
-        self.price_analysis_expert = PriceAnalysisExpert(
-            model_client=price_analysis_expert_model
-        )
-        self.trading_expert = TradingExpert(model_client=trading_expert_model)
+        self.price_analysis_expert = PriceAnalysisExpert()
+        self.trading_expert = TradingExpert()
         self.portfolio_manager = PortfolioManager(
             initial_cash=initial_cash, fee_rate=fee_rate
         )
@@ -79,13 +69,15 @@ class CryptoTradingSystem:
 
         start_time = time.time()
 
-        # 1) 첫 수행 시, 지정된 기간의 일부(예: 5%)만 우선 수집
-        self.tmp_end_date = await self._calculate_partial_end_date(
-            start_date=self.start_date,
-            end_date=self.end_date,
-            portion=0.05,
-            candle_unit=self.candle_unit,
-        )
+        # # 1) 첫 수행 시, 지정된 기간의 일부(예: 5%)만 우선 수집
+        # self.tmp_end_date = await self._calculate_partial_end_date(
+        #     start_date=self.start_date,
+        #     end_date=self.end_date,
+        #     portion=0.05,
+        #     candle_unit=self.candle_unit,
+        # )
+
+        self.tmp_end_date = self.start_date
 
         while True:
             if self.tmp_end_date >= self.end_date:
@@ -254,12 +246,6 @@ class AsyncCryptoTradingSystem(CryptoTradingSystem):
         start_date: str,
         end_date: str,
         candle_unit: str,
-        price_analysis_expert_model: Union[
-            OpenAIChatCompletionClient, OllamaChatCompletionClient
-        ],
-        trading_expert_model: Union[
-            OpenAIChatCompletionClient, OllamaChatCompletionClient
-        ],
     ):
         super().__init__(
             system_name=system_name,
@@ -269,8 +255,6 @@ class AsyncCryptoTradingSystem(CryptoTradingSystem):
             start_date=start_date,
             end_date=end_date,
             candle_unit=candle_unit,
-            price_analysis_expert_model=price_analysis_expert_model,
-            trading_expert_model=trading_expert_model,
         )
 
     def run(self):
@@ -285,10 +269,6 @@ def create_system(
     start_date: str,
     end_date: str,
     candle_unit: str,
-    price_analysis_expert_model: Union[
-        OpenAIChatCompletionClient, OllamaChatCompletionClient
-    ],
-    trading_expert_model: Union[OpenAIChatCompletionClient, OllamaChatCompletionClient],
 ):
     load_dotenv()
 
@@ -300,6 +280,4 @@ def create_system(
         start_date=start_date,
         end_date=end_date,
         candle_unit=candle_unit,
-        price_analysis_expert_model=price_analysis_expert_model,
-        trading_expert_model=trading_expert_model,
     )
