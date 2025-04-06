@@ -97,7 +97,7 @@ class TradingExpert(AssistantAgent):
             calculate_elapsed_time(start_time, end_time)
         )
         print("-------------------- 투자 전문가 (TradingExpert) --------------------")
-        print(f"\n{reason}\n\n")
+        print(f"\n{reason}\n")
         print(
             f"응답 소요 시간: {elapsed_day}일 {elapsed_hour}시간 {elapsed_minute}분 {elapsed_second}초"
         )

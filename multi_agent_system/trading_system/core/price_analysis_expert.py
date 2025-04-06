@@ -62,7 +62,7 @@ class PriceAnalysisExpert(AssistantAgent):
             calculate_elapsed_time(start_time, end_time)
         )
         print("-------------- 가격 분석 전문가 (PriceAnalysisExpert) ---------------")
-        print(f"\n{analysis_report}\n\n")
+        print(f"\n{analysis_report}\n")
         print(
             f"응답 소요 시간: {elapsed_day}일 {elapsed_hour}시간 {elapsed_minute}분 {elapsed_second}초"
         )

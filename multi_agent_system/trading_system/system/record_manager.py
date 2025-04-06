@@ -20,15 +20,17 @@ class RecordManager:
             "low": "float64",
             "close": "float64",
             "volume": "float64",
-            "next_action": "int64",  # 다음 틱의 종가에 대해 시가에 어떤 액션을 취할지 결정
+            "next_action": "Int64",  # 다음 틱의 종가에 대해 시가에 어떤 액션을 취할지 결정
             "current_cash": "float64",  # 현재 보유 현금
             "current_position": "float64",  # 현재 보유 수량(코인 단위)
-            "price_analysis_report": "str",  # 가격 분석 리포트
-            "trading_reason": "str",  # 매매 신호 생성 이유
+            "price_analysis_report": "string",  # 가격 분석 리포트
+            "trading_reason": "string",  # 매매 신호 생성 이유
         }
 
         if os.path.exists(self.file_path):
-            self.df = pd.read_csv(self.file_path, dtype=str)  # 일단 문자열로 불러오고
+            self.df = pd.read_csv(
+                self.file_path, dtype=str, encoding="cp949"
+            )  # 일단 문자열로 불러오고
             self.df = self._cast_types(self.df)  # 타입 변환
         else:
             self.df = pd.DataFrame(
@@ -82,6 +84,7 @@ class RecordManager:
         self.save()
 
     def save(self):
+        self.df = self.df.sort_values(by="datetime")  # 기본은 ascending=True → 오름차순
         self.df.to_csv(self.file_path, index=False, encoding="cp949")
 
     def get_dataframe(self) -> pd.DataFrame:

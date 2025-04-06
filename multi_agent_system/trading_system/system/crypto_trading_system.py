@@ -135,12 +135,12 @@ class CryptoTradingSystem:
 
             self.record_manager.record_step(
                 {
-                    "datetime": price_data[-1]["date"],
-                    "open": price_data[-1]["open"],
-                    "high": price_data[-1]["high"],
-                    "low": price_data[-1]["low"],
-                    "close": price_data[-1]["close"],
-                    "volume": price_data[-1]["volume"],
+                    "datetime": price_data[-2]["date"],
+                    "open": price_data[-2]["open"],
+                    "high": price_data[-2]["high"],
+                    "low": price_data[-2]["low"],
+                    "close": price_data[-2]["close"],
+                    "volume": price_data[-2]["volume"],
                     "next_action": signal,
                     "current_cash": self.portfolio_manager.current_cash,
                     "current_position": self.portfolio_manager.current_position,
@@ -151,8 +151,6 @@ class CryptoTradingSystem:
 
         if self.portfolio_manager.current_position > 0:
             # 전체 코인을 팔아서 현금화
-            print(self.tmp_end_date)
-            print(price_data[-1]["close"])
             self.portfolio_manager.record_trade(
                 date=self.tmp_end_date,
                 action=-1,
@@ -174,6 +172,22 @@ class CryptoTradingSystem:
         )
         print(
             f"총 소요 시간: {elapsed_day}일 {elapsed_hour}시간 {elapsed_minute}분 {elapsed_second}초"
+        )
+
+        self.record_manager.record_step(
+            {
+                "datetime": price_data[-1]["date"],
+                "open": price_data[-1]["open"],
+                "high": price_data[-1]["high"],
+                "low": price_data[-1]["low"],
+                "close": price_data[-1]["close"],
+                "volume": price_data[-1]["volume"],
+                "next_action": None,
+                "current_cash": self.portfolio_manager.current_cash,
+                "current_position": self.portfolio_manager.current_position,
+                "price_analysis_report": None,
+                "trading_reason": None,
+            }
         )
 
     async def _calculate_partial_end_date(
