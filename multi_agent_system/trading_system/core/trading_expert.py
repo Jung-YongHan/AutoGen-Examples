@@ -1,6 +1,7 @@
 import os
 import re
 import time
+from typing import Tuple
 
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.messages import TextMessage
@@ -39,7 +40,7 @@ class TradingExpert(AssistantAgent):
             """,
         )
 
-    async def generate_signal(self, analysis_report: str) -> int:
+    async def generate_signal(self, analysis_report: str) -> Tuple[int, str]:
         """
         PriceAnalysisExpert의 리포트를 고려하여
         매매 신호를 생성합니다.
@@ -101,4 +102,4 @@ class TradingExpert(AssistantAgent):
             f"응답 소요 시간: {elapsed_day}일 {elapsed_hour}시간 {elapsed_minute}분 {elapsed_second}초"
         )
         print("-------------------------------------------------------------------")
-        return signal
+        return signal, reasons

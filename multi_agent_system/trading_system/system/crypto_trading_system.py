@@ -17,6 +17,7 @@ from multi_agent_system.trading_system.core.price_analysis_expert import (
     PriceAnalysisExpert,
 )
 from multi_agent_system.trading_system.core.trading_expert import TradingExpert
+from multi_agent_system.trading_system.system.record_manager import RecordManager
 from multi_agent_system.trading_system.utils.time_utils import calculate_elapsed_time
 
 
@@ -45,6 +46,7 @@ class CryptoTradingSystem:
         self.portfolio_manager = PortfolioManager(
             initial_cash=initial_cash, fee_rate=fee_rate
         )
+        self.record_manager = RecordManager(system_name=system_name)
 
         # 설정한 투자 기간 동안 동적으로 바뀔 변수들
         self.tmp_start_date = start_date
@@ -96,7 +98,7 @@ class CryptoTradingSystem:
             )
 
             # 3) 분석 리포트 기반 매매 신호를 생성
-            signal = await self.trading_expert.generate_signal(
+            signal, signal_reason = await self.trading_expert.generate_signal(
                 analysis_report=analysis_report
             )
 
@@ -130,6 +132,22 @@ class CryptoTradingSystem:
                 f"\n현금: {self.portfolio_manager.current_cash}, 코인 수량: {self.portfolio_manager.current_position}"
             )
             print("-------------------------------------------------------------------")
+
+            self.record_manager.record_step(
+                {
+                    "datetime": price_data[-1]["date"],
+                    "open": price_data[-1]["open"],
+                    "high": price_data[-1]["high"],
+                    "low": price_data[-1]["low"],
+                    "close": price_data[-1]["close"],
+                    "volume": price_data[-1]["volume"],
+                    "next_action": signal,
+                    "current_cash": self.portfolio_manager.current_cash,
+                    "current_position": self.portfolio_manager.current_position,
+                    "price_analysis_report": analysis_report,
+                    "trading_reason": signal_reason,
+                }
+            )
 
         if self.portfolio_manager.current_position > 0:
             # 전체 코인을 팔아서 현금화

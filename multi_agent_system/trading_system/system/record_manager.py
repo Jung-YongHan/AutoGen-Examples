@@ -82,7 +82,7 @@ class RecordManager:
         self.save()
 
     def save(self):
-        self.df.to_csv(self.file_path, index=False)
+        self.df.to_csv(self.file_path, index=False, encoding="cp949")
 
     def get_dataframe(self) -> pd.DataFrame:
         return self.df
