@@ -1,8 +1,10 @@
 import asyncio
 import time
 from datetime import datetime, timedelta
-from typing import Tuple
+from typing import Tuple, Union
 
+from autogen_ext.models.ollama import OllamaChatCompletionClient
+from autogen_ext.models.openai import OpenAIChatCompletionClient
 from dotenv import load_dotenv
 
 from multi_agent_system.trading_system.core.constants import (
@@ -23,25 +25,36 @@ from multi_agent_system.trading_system.utils.time_utils import calculate_elapsed
 class CryptoTradingSystem:
     def __init__(
         self,
+        system_name: str,
         initial_cash: int,
         fee_rate: float,
         coin: str,
         start_date: str,
         end_date: str,
         candle_unit: str,
+        price_analysis_expert_model: Union[
+            OpenAIChatCompletionClient, OllamaChatCompletionClient
+        ],
+        trading_expert_model: Union[
+            OpenAIChatCompletionClient, OllamaChatCompletionClient
+        ],
     ):
-        self.data_collector = DataCollector()
-        self.price_analysis_expert = PriceAnalysisExpert()
-        self.trading_expert = TradingExpert()
-        self.portfolio_manager = PortfolioManager(
-            initial_cash=initial_cash, fee_rate=fee_rate
-        )
+        self.system_name = system_name
         self.initial_cash = initial_cash
         self.fee_rate = fee_rate
         self.coin = coin
         self.start_date = start_date
         self.end_date = end_date
         self.candle_unit = candle_unit
+
+        self.data_collector = DataCollector()
+        self.price_analysis_expert = PriceAnalysisExpert(
+            model_client=price_analysis_expert_model
+        )
+        self.trading_expert = TradingExpert(model_client=trading_expert_model)
+        self.portfolio_manager = PortfolioManager(
+            initial_cash=initial_cash, fee_rate=fee_rate
+        )
 
         # 설정한 투자 기간 동안 동적으로 바뀔 변수들
         self.tmp_start_date = start_date
@@ -234,15 +247,30 @@ class CryptoTradingSystem:
 class AsyncCryptoTradingSystem(CryptoTradingSystem):
     def __init__(
         self,
+        system_name: str,
         initial_cash: int,
         fee_rate: float,
         coin: str,
         start_date: str,
         end_date: str,
         candle_unit: str,
+        price_analysis_expert_model: Union[
+            OpenAIChatCompletionClient, OllamaChatCompletionClient
+        ],
+        trading_expert_model: Union[
+            OpenAIChatCompletionClient, OllamaChatCompletionClient
+        ],
     ):
         super().__init__(
-            initial_cash, fee_rate, coin, start_date, end_date, candle_unit
+            system_name=system_name,
+            initial_cash=initial_cash,
+            fee_rate=fee_rate,
+            coin=coin,
+            start_date=start_date,
+            end_date=end_date,
+            candle_unit=candle_unit,
+            price_analysis_expert_model=price_analysis_expert_model,
+            trading_expert_model=trading_expert_model,
         )
 
     def run(self):
@@ -250,20 +278,28 @@ class AsyncCryptoTradingSystem(CryptoTradingSystem):
 
 
 def create_system(
+    system_name: str,
     initial_cash: int,
     fee_rate: float,
     coin: str,
     start_date: str,
     end_date: str,
     candle_unit: str,
+    price_analysis_expert_model: Union[
+        OpenAIChatCompletionClient, OllamaChatCompletionClient
+    ],
+    trading_expert_model: Union[OpenAIChatCompletionClient, OllamaChatCompletionClient],
 ):
     load_dotenv()
 
     return AsyncCryptoTradingSystem(
+        system_name=system_name,
         initial_cash=initial_cash,
         fee_rate=fee_rate,
         coin=coin,
         start_date=start_date,
         end_date=end_date,
         candle_unit=candle_unit,
+        price_analysis_expert_model=price_analysis_expert_model,
+        trading_expert_model=trading_expert_model,
     )
